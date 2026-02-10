@@ -20,14 +20,14 @@ const (
 )
 
 type Task struct {
-	ID          int64        `json:"id"`
-	ProjectID   int64        `json:"project_id"`
-	AssigneeID  *int64       `json:"assignee_id"`
-	Title       string       `json:"title"`
-	Description *string      `json:"description"`
-	Status      TaskStatus   `json:"status"`
-	Priority    TaskPriority `json:"priority"`
-	Deadline    *string      `json:"deadline"`
-	CreatedAt   time.Time    `json:"created_at"`
-	UpdatedAt   time.Time    `json:"updated_at"`
+	ID          int64        `json:"id"          db:"id"`
+	ProjectID   int64        `json:"project_id"  db:"project_id"`
+	AssigneeID  *int64       `json:"assignee_id" db:"assignee_id"`
+	Title       string       `json:"title"       db:"title"`
+	Description *string      `json:"description" db:"description"`
+	Status      TaskStatus   `json:"status"      db:"status"`
+	Priority    TaskPriority `json:"priority"    db:"priority"`
+	Deadline    *string      `json:"deadline"    db:"deadline"`
+	CreatedAt   time.Time    `json:"created_at"  db:"created_at"`
+	UpdatedAt   time.Time    `json:"updated_at"  db:"updated_at"`
 }
