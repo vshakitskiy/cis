@@ -8,6 +8,6 @@ type TimeEntry struct {
 	UserID      int64     `json:"user_id"     db:"user_id"`
 	Minutes     int       `json:"minutes"     db:"minutes"`
 	Description *string   `json:"description" db:"description"`
-	Date        string    `json:"date"        db:"date"`
+	Date        Date      `json:"date"        db:"date"`
 	CreatedAt   time.Time `json:"created_at"  db:"created_at"`
 }

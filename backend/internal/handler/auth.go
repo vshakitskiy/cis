@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/vshakitskiy/cis/internal/model"
+	"github.com/vshakitskiy/cis/internal/response"
 	"github.com/vshakitskiy/cis/internal/service"
 )
 
@@ -35,13 +36,13 @@ type registerRequest struct {
 
 func (h *AuthHandler) register(w http.ResponseWriter, r *http.Request) {
 	var req registerRequest
-	if err := ReadJSON(r, &req); err != nil {
-		WriteJSON(w, http.StatusBadRequest, JSON{"error": "invalid request body"})
+	if err := response.ReadJSON(r, &req); err != nil {
+		response.WriteJSON(w, http.StatusBadRequest, response.JSON{"error": "invalid request body"})
 		return
 	}
 
 	if req.Email == "" || req.Password == "" || req.Name == "" {
-		WriteJSON(w, http.StatusBadRequest, JSON{"error": "email, password, and name are required"})
+		response.WriteJSON(w, http.StatusBadRequest, response.JSON{"error": "email, password, and name are required"})
 		return
 	}
 
@@ -51,15 +52,15 @@ func (h *AuthHandler) register(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.authService.Register(r.Context(), req.Email, req.Password, req.Name, req.Role)
 	if errors.Is(err, service.ErrEmailTaken) {
-		WriteJSON(w, http.StatusConflict, JSON{"error": err.Error()})
+		response.WriteJSON(w, http.StatusConflict, response.JSON{"error": err.Error()})
 		return
 	}
 	if err != nil {
-		WriteJSON(w, http.StatusInternalServerError, JSON{"error": "registration failed"})
+		response.WriteJSON(w, http.StatusInternalServerError, response.JSON{"error": "registration failed"})
 		return
 	}
 
-	WriteJSON(w, http.StatusCreated, user)
+	response.WriteJSON(w, http.StatusCreated, user)
 }
 
 type loginRequest struct {
@@ -69,25 +70,25 @@ type loginRequest struct {
 
 func (h *AuthHandler) login(w http.ResponseWriter, r *http.Request) {
 	var req loginRequest
-	if err := ReadJSON(r, &req); err != nil {
-		WriteJSON(w, http.StatusBadRequest, JSON{"error": "invalid request body"})
+	if err := response.ReadJSON(r, &req); err != nil {
+		response.WriteJSON(w, http.StatusBadRequest, response.JSON{"error": "invalid request body"})
 		return
 	}
 
 	if req.Email == "" || req.Password == "" {
-		WriteJSON(w, http.StatusBadRequest, JSON{"error": "email and password are required"})
+		response.WriteJSON(w, http.StatusBadRequest, response.JSON{"error": "email and password are required"})
 		return
 	}
 
 	token, err := h.authService.Login(r.Context(), req.Email, req.Password)
 	if errors.Is(err, service.ErrInvalidCredentials) {
-		WriteJSON(w, http.StatusUnauthorized, JSON{"error": err.Error()})
+		response.WriteJSON(w, http.StatusUnauthorized, response.JSON{"error": err.Error()})
 		return
 	}
 	if err != nil {
-		WriteJSON(w, http.StatusInternalServerError, JSON{"error": "login failed"})
+		response.WriteJSON(w, http.StatusInternalServerError, response.JSON{"error": "login failed"})
 		return
 	}
 
-	WriteJSON(w, http.StatusOK, JSON{"token": token})
+	response.WriteJSON(w, http.StatusOK, response.JSON{"token": token})
 }

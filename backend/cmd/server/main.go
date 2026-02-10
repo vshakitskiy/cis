@@ -15,7 +15,9 @@ import (
 	"github.com/vshakitskiy/cis/internal/config"
 	"github.com/vshakitskiy/cis/internal/db"
 	"github.com/vshakitskiy/cis/internal/handler"
+	"github.com/vshakitskiy/cis/internal/middleware"
 	"github.com/vshakitskiy/cis/internal/repository"
+	"github.com/vshakitskiy/cis/internal/response"
 	"github.com/vshakitskiy/cis/internal/service"
 )
 
@@ -46,14 +48,42 @@ func main() {
 	}))
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
-		handler.WriteJSON(w, http.StatusOK, handler.JSON{"status": "ok"})
+		response.WriteJSON(w, http.StatusOK, response.JSON{"status": "ok"})
 	})
 
 	userRepo := repository.NewUserRepo(pool)
-	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
-	authHandler := handler.NewAuthHandler(authService)
+	projectRepo := repository.NewProjectRepo(pool)
+	taskRepo := repository.NewTaskRepo(pool)
+	timeEntryRepo := repository.NewTimeEntryRepo(pool)
+	commentRepo := repository.NewCommentRepo(pool)
+	attachmentRepo := repository.NewAttachmentRepo(pool)
+	reportRepo := repository.NewReportRepo(pool)
 
-	r.Mount("/api/auth", authHandler.Routes())
+	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
+	projectService := service.NewProjectService(projectRepo)
+	taskService := service.NewTaskService(taskRepo, projectRepo)
+	timeEntryService := service.NewTimeEntryService(timeEntryRepo, taskRepo)
+	commentService := service.NewCommentService(commentRepo, taskRepo)
+	attachmentService := service.NewAttachmentService(attachmentRepo, taskRepo, "./uploads")
+
+	authHandler := handler.NewAuthHandler(authService)
+	timeEntryHandler := handler.NewTimeEntryHandler(timeEntryService)
+	commentHandler := handler.NewCommentHandler(commentService)
+	attachmentHandler := handler.NewAttachmentHandler(attachmentService)
+	taskHandler := handler.NewTaskHandler(taskService, timeEntryHandler, commentHandler, attachmentHandler)
+	reportHandler := handler.NewReportHandler(reportRepo)
+	projectHandler := handler.NewProjectHandler(projectService, taskHandler, reportHandler)
+
+	authMiddleware := middleware.Auth(authService, userRepo)
+
+	r.Route("/api", func(r chi.Router) {
+		r.Mount("/auth", authHandler.Routes())
+
+		r.Group(func(r chi.Router) {
+			r.Use(authMiddleware)
+			r.Mount("/projects", projectHandler.Routes())
+		})
+	})
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.ServerPort,

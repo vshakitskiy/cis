@@ -7,7 +7,7 @@ type Project struct {
 	Name        string    `json:"name"        db:"name"`
 	Description *string   `json:"description" db:"description"`
 	OwnerID     int64     `json:"owner_id"    db:"owner_id"`
-	Deadline    *string   `json:"deadline"    db:"deadline"`
+	Deadline    *Date     `json:"deadline"    db:"deadline"`
 	CreatedAt   time.Time `json:"created_at"  db:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"  db:"updated_at"`
 }

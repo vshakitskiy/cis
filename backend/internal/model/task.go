@@ -27,7 +27,7 @@ type Task struct {
 	Description *string      `json:"description" db:"description"`
 	Status      TaskStatus   `json:"status"      db:"status"`
 	Priority    TaskPriority `json:"priority"    db:"priority"`
-	Deadline    *string      `json:"deadline"    db:"deadline"`
+	Deadline    *Date        `json:"deadline"    db:"deadline"`
 	CreatedAt   time.Time    `json:"created_at"  db:"created_at"`
 	UpdatedAt   time.Time    `json:"updated_at"  db:"updated_at"`
 }
